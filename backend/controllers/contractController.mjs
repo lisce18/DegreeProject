@@ -21,21 +21,31 @@ export const createTransaction = async (partyB) => {
         const tx = await contract.createTransaction(partyB);
         const receipt = await tx.wait();
 
+        console.log("Transaction receipt:", JSON.stringify(receipt, null, 2));
+
         const iface = new ethers.Interface(contractABI);
 
-        const log = receipt.logs.find((log) => {
+        console.log("Receipt logs:", JSON.stringify(receipt.logs, null, 2));
+
+        for (const log of receipt.logs) {
+            console.log("Log:", log);
             try {
                 const parsedLog = iface.parseLog(log);
-                return parsedLog.name === "TransactionCreated";
+                console.log("Parsed log:", parsedLog);
+                if (parsedLog.name === "TransactionCreated") {
+                    const transactionId =
+                        parsedLog.args.transactionId.toString();
+                    return { transactionId };
+                }
             } catch (e) {
-                return false;
+                console.error("Error parsing log:", e);
             }
-        });
+        }
 
-        const parsedLog = iface.parseLog(log);
-        const transactionId = parsedLog.args.transactionId.toString();
-        return { transactionId };
+        console.error("Logs:", JSON.stringify(receipt.logs, null, 2));
+        throw new Error("TransactionCreated event not found in logs");
     } catch (error) {
+        console.error("Error creating transaction:", error);
         return { error: error.message };
     }
 };
@@ -47,7 +57,7 @@ export const getTransaction = async (transactionId) => {
 
 export const deposit = async (transactionId, amount) => {
     const tx = await contract.deposit(transactionId, {
-        value: ethers.parseEther(amount),
+        value: ethers.utils.parseEther(amount),
     });
     await tx.wait();
     return tx.hash;

@@ -53,13 +53,15 @@ describe("Escrow", function () {
             const { escrow, buyer, seller } = await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
 
+            await escrow.connect(seller).acceptTransaction(0);
+
             await escrow
                 .connect(buyer)
                 .deposit(0, { value: hre.ethers.parseEther("1.0") });
             const transaction = await escrow.getTransaction(0);
             const { amount, currState } = transaction;
             expect(amount).to.equal(hre.ethers.parseEther("1.0"));
-            expect(currState).to.equal(1);
+            expect(currState).to.equal(2);
         });
 
         it("Should not allow the buyer to deposit funds in the wrong state", async function () {

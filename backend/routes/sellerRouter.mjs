@@ -1,12 +1,7 @@
 import express from "express";
 import {
     cancelOrder,
-    confirmCompletion,
-    createTransaction,
-    deposit,
     getTransaction,
-    raiseDispute,
-    resolveDispute,
 } from "../controllers/contractController.mjs";
 
 const router = express.Router();
@@ -21,9 +16,10 @@ router.post("/cancelOrder", async (req, res) => {
     }
 });
 
-router.get("/getTransaction/:id", async (req, res) => {
+router.get("/transaction:id", async (req, res) => {
     try {
-        const transaction = await getTransaction(req.params.id);
+        const { transactionId } = req.params;
+        const transaction = await getTransaction(transactionId);
         res.json(transaction);
     } catch (err) {
         res.status(500).json({ error: err.message });

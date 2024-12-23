@@ -10,9 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get("/getTransaction/:id", async (req, res) => {
+router.get("/transaction/:transactionId", async (req, res) => {
     try {
-        const transaction = await getTransaction(req.params.id);
+        const { transactionId } = req.params;
+        const transaction = await getTransaction(transactionId);
         res.json(transaction);
     } catch (err) {
         res.status(500).json({ error: err.message });
@@ -21,8 +22,8 @@ router.get("/getTransaction/:id", async (req, res) => {
 
 router.post("/createTransaction", async (req, res) => {
     try {
-        const { partyB } = req.body;
-        const transactionId = await createTransaction(partyB);
+        const { seller } = req.body;
+        const transactionId = await createTransaction(seller);
         res.json({ transactionId });
     } catch (err) {
         res.status(500).json({ error: err.message });

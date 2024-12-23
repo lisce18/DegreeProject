@@ -16,4 +16,14 @@ router.post("/resolveDispute", async (req, res) => {
     }
 });
 
+router.get("/transaction:id", async (req, res) => {
+    try {
+        const { transactionId } = req.params;
+        const transaction = await getTransaction(transactionId);
+        res.json(transaction);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 export default router;
