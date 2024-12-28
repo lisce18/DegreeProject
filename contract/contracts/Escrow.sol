@@ -33,18 +33,23 @@ contract Escrow {
         _;
     }
 
+    modifier onlySeller(uint256 _transactionId) {
+        require(msg.sender == transactions[_transactionId].seller, "Only the seller can call this function.");
+        _;
+    }
+
     modifier onlyMediator() {
         require(msg.sender == mediator, "Only the mediator can call this function.");
         _;
     }
 
-    function acceptTransaction(uint256 _transactionId) external {
+    function acceptTransaction(uint256 _transactionId)  external onlySeller(_transactionId) {
         EscrowTransaction storage transaction = transactions[_transactionId];
         require(transaction.currState == State.CREATED, "Order cannot be accepted at this stage.");
         transaction.currState = State.ACCEPTED;
     }
 
-    function createTransaction(address _seller) external returns (uint256) {
+    function createTransaction(address _seller) external returns (uint256){
         require(_seller != msg.sender, "Cannot create a transaction with yourself.");
         uint256 transactionId = transactionCounter;
         transactions[transactionId] = EscrowTransaction({
@@ -97,7 +102,7 @@ contract Escrow {
 
     function cancelOrder(uint256 _transactionId) external onlyParty(_transactionId) {
         EscrowTransaction storage transaction = transactions[_transactionId];
-        require(transaction.currState == State.DEPOSITED, "Order cannot be cancelled at this stage.");
+        require(transaction.currState == State.CREATED, "Order cannot be cancelled at this stage.");
         transaction.currState = State.CANCELED;
     }
 }

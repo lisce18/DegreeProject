@@ -16,18 +16,31 @@
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "partyA",
+                "name": "buyer",
                 "type": "address"
             },
             {
                 "indexed": true,
                 "internalType": "address",
-                "name": "partyB",
+                "name": "seller",
                 "type": "address"
             }
         ],
         "name": "TransactionCreated",
         "type": "event"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "_transactionId",
+                "type": "uint256"
+            }
+        ],
+        "name": "acceptTransaction",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
     },
     {
         "inputs": [
@@ -59,7 +72,7 @@
         "inputs": [
             {
                 "internalType": "address",
-                "name": "_partyB",
+                "name": "_seller",
                 "type": "address"
             }
         ],
@@ -106,12 +119,12 @@
                     },
                     {
                         "internalType": "address",
-                        "name": "partyA",
+                        "name": "buyer",
                         "type": "address"
                     },
                     {
                         "internalType": "address",
-                        "name": "partyB",
+                        "name": "seller",
                         "type": "address"
                     },
                     {
@@ -135,7 +148,7 @@
     },
     {
         "inputs": [],
-        "name": "owner",
+        "name": "mediator",
         "outputs": [
             {
                 "internalType": "address",
@@ -168,7 +181,7 @@
             },
             {
                 "internalType": "bool",
-                "name": "releaseFundsToPartyB",
+                "name": "releaseFundsToSeller",
                 "type": "bool"
             }
         ],
@@ -207,12 +220,12 @@
             },
             {
                 "internalType": "address",
-                "name": "partyA",
+                "name": "buyer",
                 "type": "address"
             },
             {
                 "internalType": "address",
-                "name": "partyB",
+                "name": "seller",
                 "type": "address"
             },
             {

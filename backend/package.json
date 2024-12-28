@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "The backend of my B2B solution for handling secure transactions through a smart contract and scheduling of arrivals of purchased goods.",
     "main": "server.mjs",
+    "type": "module",
     "scripts": {
         "start": "node server.mjs",
         "dev": "nodemon server.mjs"
@@ -18,8 +19,10 @@
     },
     "homepage": "https://github.com/lisce18/DegreeProject#readme",
     "dependencies": {
+        "bcryptjs": "^2.4.3",
         "colors": "^1.4.0",
         "cors": "^2.8.5",
+        "crypto": "^1.0.1",
         "dotenv": "^16.4.7",
         "elliptic": "^6.6.1",
         "ethers": "^6.13.4",
@@ -28,6 +31,7 @@
         "helmet": "^8.0.0",
         "hex-to-binary": "^1.0.1",
         "hpp": "^0.2.3",
+        "jsonwebtoken": "^9.0.2",
         "mongoose": "^8.9.2",
         "morgan": "^1.10.0",
         "pubnub": "^8.3.1",

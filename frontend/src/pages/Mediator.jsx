@@ -1,23 +1,15 @@
 import React from "react";
-import { Link, Outlet } from "react-router-dom";
-import ResolveDispute from "../components/ResolveDispute";
+import CreateCompany from "../components/CreateCompany";
+import CompanyList from "../components/CompanyList";
 
-const Mediator = () => {
+const MediatorPage = () => {
     return (
         <div>
-            <h1>Mediator Page</h1>
-            <nav>
-                <ul>
-                    <li>
-                        <Link to="/mediator/resolveDispute">
-                            Resolve Dispute
-                        </Link>
-                    </li>
-                </ul>
-            </nav>
-            <Outlet />
+            <h1>Mediator Dashboard</h1>
+            <CreateCompany />
+            <CompanyList />
         </div>
     );
 };
 
-export default Mediator;
+export default MediatorPage;

@@ -1,21 +1,13 @@
 import React from "react";
-import { Link, Outlet } from "react-router-dom";
-import CancelOrder from "../components/CancelOrder";
+import TransactionList from "../components/TransactionList";
 
-const Seller = () => {
+const SellerPage = () => {
     return (
         <div>
-            <h1>Seller Page</h1>
-            <nav>
-                <ul>
-                    <li>
-                        <Link to="/seller/cancelOrder">Cancel Order</Link>
-                    </li>
-                </ul>
-            </nav>
-            <Outlet />
+            <h1>Seller Dashboard</h1>
+            <TransactionList role="seller" />
         </div>
     );
 };
 
-export default Seller;
+export default SellerPage;
