@@ -3,12 +3,13 @@ import { expect } from "chai";
 
 describe("Escrow", function () {
     const deployEscrowFixture = async () => {
-        const [mediator, buyer, seller] = await hre.ethers.getSigners();
+        const [mediator, buyer, seller, outsider] =
+            await hre.ethers.getSigners();
 
         const Escrow = await hre.ethers.getContractFactory("Escrow");
         const escrow = await Escrow.deploy();
 
-        return { escrow, mediator, buyer, seller };
+        return { escrow, mediator, buyer, seller, outsider };
     };
 
     describe("Deployment", function () {
@@ -45,6 +46,43 @@ describe("Escrow", function () {
             await expect(
                 escrow.connect(buyer).createTransaction(buyer.address)
             ).to.be.revertedWith("Cannot create a transaction with yourself.");
+        });
+    });
+
+    describe("Accept Order", function () {
+        it("Should allow the seller to accept an order", async function () {
+            const { escrow, buyer, seller } = await deployEscrowFixture();
+
+            await escrow.connect(buyer).createTransaction(seller.address);
+
+            await escrow.connect(seller).acceptTransaction(0);
+
+            const transaction = await escrow.getTransaction(0);
+            const { currState } = transaction;
+
+            expect(currState).to.equal(1);
+        });
+
+        it("Should not allow the seller to accept the order in the wrong state", async function () {
+            const { escrow, buyer, seller } = await deployEscrowFixture();
+
+            await escrow.connect(buyer).createTransaction(seller.address);
+
+            await escrow.connect(seller).acceptTransaction(0);
+
+            await expect(
+                escrow.connect(seller).acceptTransaction(0)
+            ).to.be.revertedWith("Order cannot be accepted at this stage.");
+        });
+
+        it("Should not allow a buyer to accept an order", async function () {
+            const { escrow, buyer, seller } = await deployEscrowFixture();
+
+            await escrow.connect(buyer).createTransaction(seller.address);
+
+            await expect(
+                escrow.connect(buyer).acceptTransaction(0)
+            ).to.be.revertedWith("Only the seller can call this function.");
         });
     });
 
@@ -96,22 +134,24 @@ describe("Escrow", function () {
             const { escrow, buyer, seller } = await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
 
+            await escrow.connect(seller).acceptTransaction(0);
+
             await escrow
                 .connect(buyer)
                 .deposit(0, { value: hre.ethers.parseEther("1.0") });
-            const initialsellerBalance = await hre.ethers.provider.getBalance(
+            const initialSellerBalance = await hre.ethers.provider.getBalance(
                 seller.address
             );
             await escrow.connect(buyer).confirmCompletion(0);
-            const finalsellerBalance = await hre.ethers.provider.getBalance(
+            const finalSellerBalance = await hre.ethers.provider.getBalance(
                 seller.address
             );
-            expect(finalsellerBalance - initialsellerBalance).to.equal(
+            expect(finalSellerBalance - initialSellerBalance).to.equal(
                 hre.ethers.parseEther("1.0")
             );
             const transaction = await escrow.getTransaction(0);
             const { currState } = transaction;
-            expect(currState).to.equal(2);
+            expect(currState).to.equal(3);
         });
 
         it("Should not allow the buyer to confirm completion in the wrong state", async function () {
@@ -126,6 +166,8 @@ describe("Escrow", function () {
         it("Should not allow the seller to confirm completion", async function () {
             const { escrow, buyer, seller } = await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
+
+            await escrow.connect(seller).acceptTransaction(0);
 
             await escrow
                 .connect(buyer)
@@ -142,13 +184,15 @@ describe("Escrow", function () {
             const { escrow, buyer, seller } = await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
 
+            await escrow.connect(seller).acceptTransaction(0);
+
             await escrow
                 .connect(buyer)
                 .deposit(0, { value: hre.ethers.parseEther("1.0") });
             await escrow.connect(buyer).raiseDispute(0);
             const transaction = await escrow.getTransaction(0);
             const { currState } = transaction;
-            expect(currState).to.equal(3);
+            expect(currState).to.equal(4);
         });
 
         it("Should not allow the buyer to raise a dispute in the wrong state", async function () {
@@ -163,6 +207,8 @@ describe("Escrow", function () {
         it("Should not allow the seller to raise a dispute", async function () {
             const { escrow, buyer, seller } = await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
+
+            await escrow.connect(seller).acceptTransaction(0);
 
             await escrow
                 .connect(buyer)
@@ -180,6 +226,8 @@ describe("Escrow", function () {
                 await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
 
+            await escrow.connect(seller).acceptTransaction(0);
+
             await escrow
                 .connect(buyer)
                 .deposit(0, { value: hre.ethers.parseEther("1.0") });
@@ -196,13 +244,15 @@ describe("Escrow", function () {
             );
             const transaction = await escrow.getTransaction(0);
             const { currState } = transaction;
-            expect(currState).to.equal(2);
+            expect(currState).to.equal(3);
         });
 
         it("Should allow the mediator to resolve a dispute in favor of the buyer", async function () {
             const { escrow, mediator, buyer, seller } =
                 await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
+
+            await escrow.connect(seller).acceptTransaction(0);
 
             await escrow
                 .connect(buyer)
@@ -220,7 +270,7 @@ describe("Escrow", function () {
             );
             const transaction = await escrow.getTransaction(0);
             const { currState } = transaction;
-            expect(currState).to.equal(5);
+            expect(currState).to.equal(6);
         });
 
         it("Should not allow the mediator to resolve a dispute in the wrong state", async function () {
@@ -228,11 +278,14 @@ describe("Escrow", function () {
                 await deployEscrowFixture();
             await escrow.connect(buyer).createTransaction(seller.address);
 
+            await escrow.connect(seller).acceptTransaction(0);
+
             await escrow
                 .connect(buyer)
                 .deposit(0, { value: hre.ethers.parseEther("1.0") });
             await escrow.connect(buyer).raiseDispute(0);
             await escrow.connect(mediator).resolveDispute(0, true);
+
             await expect(
                 escrow.connect(mediator).resolveDispute(0, true)
             ).to.be.revertedWith("No dispute to resolve.");
@@ -244,6 +297,8 @@ describe("Escrow", function () {
 
             await escrow.connect(buyer).createTransaction(seller.address);
 
+            await escrow.connect(seller).acceptTransaction(0);
+
             await expect(
                 escrow.connect(mediator).resolveDispute(1, true)
             ).to.be.revertedWith("No dispute to resolve.");
@@ -253,6 +308,8 @@ describe("Escrow", function () {
             const { escrow, buyer, seller } = await deployEscrowFixture();
 
             await escrow.connect(buyer).createTransaction(seller.address);
+
+            await escrow.connect(seller).acceptTransaction(0);
 
             await escrow
                 .connect(buyer)
@@ -275,7 +332,7 @@ describe("Escrow", function () {
             await escrow.connect(buyer).cancelOrder(0);
             const transaction = await escrow.getTransaction(0);
             const { currState } = transaction;
-            expect(currState).to.equal(4);
+            expect(currState).to.equal(5);
         });
 
         it("Should allow the seller to cancel an order", async function () {
@@ -285,7 +342,7 @@ describe("Escrow", function () {
             await escrow.connect(seller).cancelOrder(0);
             const transaction = await escrow.getTransaction(0);
             const { currState } = transaction;
-            expect(currState).to.equal(4);
+            expect(currState).to.equal(5);
         });
 
         it("Should not allow any party to cancel in the wrong state", async function () {
