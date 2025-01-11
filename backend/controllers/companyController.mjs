@@ -15,13 +15,8 @@ export const createCompany = async (
             throw new Error("Private key is required");
         }
 
-        // Log the received privateKey
-        console.log("Private key received:", privateKey);
-
-        // Encrypt the private key
         const encryptedPrivateKey = encrypt(privateKey);
 
-        // Create a new company
         const newCompany = new Company({
             name,
             walletAddress,
@@ -30,10 +25,8 @@ export const createCompany = async (
 
         await newCompany.save();
 
-        // Hash the admin password
         const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
-        // Create a new admin user
         const newAdmin = new User({
             username: adminUsername,
             password: hashedPassword,
@@ -59,10 +52,8 @@ export const addUser = async (companyId, username, password, role) => {
             throw new Error("Company not found!");
         }
 
-        // Hash the user password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create a new user
         const newUser = new User({
             username,
             password: hashedPassword,
@@ -72,9 +63,8 @@ export const addUser = async (companyId, username, password, role) => {
 
         await newUser.save();
 
-        // Add the new user to the company's user array
         company.users.push(newUser._id);
-        await company.save(); // Save the company document
+        await company.save();
 
         return newUser;
     } catch (err) {
